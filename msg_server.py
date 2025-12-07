@@ -23,17 +23,18 @@ def handle_client_connection(s: socket, active_connections: dict):
     username = request_username(s)
     active_connections[username] = s
 
+    # TODO: send connected message
+    print(username + " has connected.")
+
     while True:
-        data = s.recv(1024)
-
-        # If the client disconnects, close the socket and remove it from the list
-        if not data:
-            s.close()
+        try:
+            data = s.recv(1024)
+            # parse the message and forward it to the intended destination
+            forward_message(data.decode(), active_connections, username)
+        except ConnectionResetError:
             active_connections.pop(username)
-            return
-
-        # otherwise, parse the message and forward it to the intended destination
-        forward_message(data.decode(), active_connections, username)
+            # TODO: send disconnected message
+            print(username + " has disconnected.")
 
 # Parse one message and send it to the intended recipient (or to everyone if
 #  there is no specific recipient)
@@ -46,14 +47,19 @@ def forward_message(message: str, active_connections: dict, sender_username: str
         target = parts[0][1:]  # remove '@'
         text = parts[1]
         if target in active_connections:
-            active_connections[target].send(f"(private) {sender_username}: {text}".encode())
+            targeted_message = f"{sender_username} > {target}: {text}"
+            active_connections[sender_username].send(targeted_message.encode())
+            active_connections[target].send(targeted_message.encode())
         else:
             active_connections[sender_username].send(f"Could not send message: User {target} is offline or does not exist.".encode())
     else:
-        # broadcast to everyone except sender
-        for user, conn in active_connections.items():
-            if user != sender_username:
-                conn.send(f"{sender_username}: {message}".encode())
+        broadcast_message(f"{sender_username}: {message}", active_connections)
+
+
+def broadcast_message(message: str, active_connections: dict):
+    print(message)
+    for user, conn in active_connections.items():
+        conn.send(message.encode())
 
 def request_username(s: socket) -> str:
     # send username-request message
