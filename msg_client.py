@@ -27,8 +27,8 @@ def handle_username_request(s: socket):
 
     username = input("Enter username: ")
 
-    # TODO: Send username-response message to server
-    s.send(username.encode())  # (placeholder)
+    # send username-response message to server
+    s.send(f"USERNAME:{username}".encode())  
 
 # Receive messages from the server and display them to the user
 def handle_server_connection(s: socket):

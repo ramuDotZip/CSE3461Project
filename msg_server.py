@@ -38,18 +38,37 @@ def handle_client_connection(s: socket, active_connections: dict):
 # Parse one message and send it to the intended recipient (or to everyone if
 #  there is no specific recipient)
 def forward_message(message: str, active_connections: dict):
-    # TODO
-    ...
+    # Handle private @username messages
+    if message.startswith("@"):
+        parts = message.split(" ", 1)
+        if len(parts) < 2:
+            return
+        target = parts[0][1:]  # remove '@'
+        text = parts[1]
+        if target in active_connections:
+            active_connections[target].send(f"(private) {username}: {text}".encode())
+        else:
+            active_connections[username].send("ERROR: user not found".encode())
+    else:
+        # broadcast to everyone except sender
+        for user, conn in active_connections.items():
+            if user != username:
+                conn.send(f"{username}: {message}".encode())
 
 def request_username(s: socket) -> str:
-    # TODO: send username-request message
-    s.send("?".encode())  # (placeholder)
+    # send username-request message
+    s.send("USERNAME?".encode())
 
     response = s.recv(1024)
 
-    # TODO: validate username-response format
-    # TODO: parse username
+    # validate username-response format
+    decoded = response.decode()
 
-    return response.decode()  # (placeholder)
+    # parse username
+    if decoded.startswith("USERNAME:"):
+        return decoded.split(":", 1)[1]  # text after USERNAME:
+    else:
+        return "unknown"  # fallback if client misbehaves
 
 server_main()
+
