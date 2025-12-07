@@ -33,11 +33,11 @@ def handle_client_connection(s: socket, active_connections: dict):
             return
 
         # otherwise, parse the message and forward it to the intended destination
-        forward_message(data.decode(), active_connections)
+        forward_message(data.decode(), active_connections, username)
 
 # Parse one message and send it to the intended recipient (or to everyone if
 #  there is no specific recipient)
-def forward_message(message: str, active_connections: dict):
+def forward_message(message: str, active_connections: dict, sender_username: str):
     # Handle private @username messages
     if message.startswith("@"):
         parts = message.split(" ", 1)
@@ -46,14 +46,14 @@ def forward_message(message: str, active_connections: dict):
         target = parts[0][1:]  # remove '@'
         text = parts[1]
         if target in active_connections:
-            active_connections[target].send(f"(private) {username}: {text}".encode())
+            active_connections[target].send(f"(private) {sender_username}: {text}".encode())
         else:
-            active_connections[username].send("ERROR: user not found".encode())
+            active_connections[sender_username].send(f"Could not send message: User {target} is offline or does not exist.".encode())
     else:
         # broadcast to everyone except sender
         for user, conn in active_connections.items():
-            if user != username:
-                conn.send(f"{username}: {message}".encode())
+            if user != sender_username:
+                conn.send(f"{sender_username}: {message}".encode())
 
 def request_username(s: socket) -> str:
     # send username-request message
