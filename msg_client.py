@@ -119,8 +119,8 @@ def derail(strings,amount):
 
 def encrypt(message, key):
     text = message
-    print(text)
-    print("\npre encrypt\n")
+    #print(text)
+    #print("\npre encrypt\n")
     for k in key:
         if k.isalpha():
             cea_num = az.index(k.lower())
@@ -128,8 +128,8 @@ def encrypt(message, key):
         elif k.isdigit():
             shift_by = int(k)
             text = rail(text, shift_by)
-    print(text)
-    print("\npost encrypt\n")
+    #print(text)
+    #print("\npost encrypt\n")
     return text
 
 
