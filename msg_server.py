@@ -33,16 +33,17 @@ def handle_client_connection(s: socket, active_connections: dict):
 
     active_connections[username] = s
 
-    # TODO: send connected message
-    print(username + " has connected.")
+    # broadcast connection
+    broadcast_message(f"[SYSTEM] {username} has connected.", active_connections)
+    print(f"{username} has connected.")
 
     while True:
         data = receive_message(s, 1024)
 
         if not data:
             active_connections.pop(username)
-            # TODO: send disconnected message
-            print(username + " has disconnected.")
+            broadcast_message(f"[SYSTEM] {username} has disconnected.", active_connections)
+            print(f"{username} has disconnected.")
             return
 
         # parse the message and forward it to the intended destination
