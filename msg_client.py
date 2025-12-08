@@ -1,4 +1,4 @@
-import encrypts
+from encrypts import *
 from socket import *
 from threading import *
 import string
