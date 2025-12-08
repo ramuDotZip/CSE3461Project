@@ -73,6 +73,8 @@ def caesar(str, shifts):
 
 
 def rail(strings,amount):
+    if len(strings)<3:
+        return strings
     new_str = ""
     for i in range(0, len(strings), 2):
         new_str = new_str + strings[i]
@@ -101,6 +103,8 @@ def decaesar(str, shift):
 
 def derail(strings,amount):
       result = ""
+      if len(strings) < 3:
+          return strings
       half = (len(strings) + 1) // 2
       even = strings[:half]
       odd = strings[half:]
