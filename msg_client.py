@@ -123,11 +123,13 @@ def derail(strings,amount):
 
 def encrypt(message, key):
     text = message
+    offset=0
     #print(text)
     #print("\npre encrypt\n")
     for k in key:
         if k.isalpha():
-            cea_num = az.index(k.lower())
+            cea_num = (az.index(k.lower())+ offset) % 26
+            offset = (az.index(k.lower())+ offset) % 26
             text = caesar(text, cea_num)
         elif k.isdigit():
             shift_by = int(k)
@@ -139,11 +141,17 @@ def encrypt(message, key):
 
 def decrypt(ciphertext, key):
     text = ciphertext
-
+    offset = 0
+    for k in key:
+        if k.isalpha():
+            offset = (az.index(k.lower())+ offset) % 26
     # Reverse the key order for decryption
     for k in reversed(key):
         if k.isalpha():
-            cea_num = az.index(k.lower())
+            cea_num = (az.index(k.lower())+ offset) % 26
+            offset =offset -az.index(k.lower())
+            if offset <0:
+                offset=offset+26
             text = decaesar(text, cea_num)
         elif k.isdigit():
             shift_by = int(k)
@@ -152,8 +160,10 @@ def decrypt(ciphertext, key):
     return text
 #first 2 must be letters!!!!!
 keys="af2r5"
-'''test=encrypt("testing 123 idk hello", keys)
+'''
+test=encrypt("testing 123 idk hello", keys)
 print("\npre decrypt\n")
+print(test)
 test=decrypt(test, keys)
 print("\npost decrypt\n")
 print(test)
