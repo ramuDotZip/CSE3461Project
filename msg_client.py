@@ -1,51 +1,73 @@
 from socket import *
 from threading import *
 from tkinter import *
+import re
 
 def client_main():
-    server_host = input("Enter server address: ")
+    server_host = input("Enter server address: ").strip()
+    if server_host == "":
+        server_host = "127.0.0.1"
     server_port = 12000
     client_socket = socket(AF_INET, SOCK_STREAM)
+    client_socket.settimeout(1)
     print("Connecting...")
     client_socket.connect((server_host, server_port))
     print("Connection established.")
 
     # Wait for server to request client info
-    handle_username_request(client_socket)
+    username = handle_username_request(client_socket)
 
     Thread(target=handle_server_connection, args=(client_socket,)).start()
     # handle_user_input(client_socket)
 
-    window = construct_window(client_socket)
+    window = construct_window(client_socket, username)
     window.mainloop()
 
 
 # Receive a username request from the server, prompt the user for their
 #  username, and send a username response back to the server.
-def handle_username_request(s: socket):
+def handle_username_request(s: socket) -> str:
     # TODO: add a timeout to abort the connection if the server does
     #  not properly request a username (optional)
 
-    data = s.recv(1024)
+    data = receive_message(s, 1024)
     # TODO: ensure username-request format is correct
 
-    username = input("Enter username: ")
+    username = input("Enter username: ").strip()
+    while not re.fullmatch("\\w+", username):
+        print("Username must contain only letters, digits, and underscores.")
+        username = input("Enter username: ").strip()
+
 
     # send username-response message to server
-    s.send(f"USERNAME:{username}".encode())  
+    s.send(f"USERNAME:{username}".encode())
+
+    return username
 
 # Receive messages from the server and display them to the user
 def handle_server_connection(s: socket):
     while True:
         try:
-            data = s.recv(1024)
+            data = receive_message(s, 1024)
 
             # TODO: decode message format
             display_message(data.decode())  # (placeholder)
-        except ConnectionError:
-            display_message("you have disconnected.")
+        except (ConnectionError, ConnectionResetError, ConnectionAbortedError, OSError):
+            print("Disconnected.")
+            return
 
-# Take keyboard input and send it as messages to the server
+# Wait to receive a message from the server
+def receive_message(s: socket, max_length: int):
+    while True:
+        try:
+            data = s.recv(max_length)
+            if not data:
+                raise ConnectionError()
+            return data
+        except timeout:
+            continue
+
+# Send a message to the server
 def send_message(message: str, s: socket):
     # TODO: encode message format
     try:
@@ -53,6 +75,7 @@ def send_message(message: str, s: socket):
     except ConnectionError:
         display_message("Encountered a connection error while trying to send the message.")
 
+# Add a message to the message history box
 def display_message(message: str):
     if not history_text:
         return
@@ -60,9 +83,11 @@ def display_message(message: str):
     history_text.insert("end", message + "\n")
     history_text.configure(state="disabled")
 
-def construct_window(s: socket):
-    global history_text, message_text
+# Create a client GUI window
+def construct_window(s: socket, username: str):
+    global history_text
     window = Tk()
+    window.title(f"Message Client ({username})")
 
     history_frame = Frame(window)
     message_frame = Frame(window)
