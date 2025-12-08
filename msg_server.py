@@ -24,9 +24,9 @@ def server_main():
 #  intended destination
 def handle_client_connection(s: socket, active_connections: dict):
     s.settimeout(1)
-    username = request_username(s).strip()
+    username = request_username(s, active_connections)
 
-    if username == "" or username in active_connections:
+    if not username:
         s.close()
         return
 
@@ -36,15 +36,17 @@ def handle_client_connection(s: socket, active_connections: dict):
     print(username + " has connected.")
 
     while True:
-        try:
-            data = receive_message(s, 1024)
-            # parse the message and forward it to the intended destination
-            forward_message(data.decode(), active_connections, username)
-        except (ConnectionError, ConnectionResetError, ConnectionAbortedError, OSError):
+        data = receive_message(s, 1024)
+
+        if not data:
             active_connections.pop(username)
             # TODO: send disconnected message
             print(username + " has disconnected.")
             return
+
+        # parse the message and forward it to the intended destination
+        forward_message(data.decode(), active_connections, username)
+
 
 # Parse one message and send it to the intended recipient (or to everyone if
 #  there is no specific recipient)
@@ -78,31 +80,36 @@ def broadcast_message(message: str, active_connections: dict):
     for user, conn in active_connections.items():
         conn.send(message.encode())
 
-def request_username(s: socket) -> str:
+def request_username(s: socket, active_connections: dict) -> str:
     # send username-request message
     s.send("USERNAME?".encode())
 
     response = receive_message(s, 1024)
+    if not response:
+        return ""
 
     # validate username-response format
     decoded = response.decode()
 
     # parse username
-    if decoded.startswith("USERNAME:"):
-        return decoded.split(":", 1)[1]  # text after USERNAME:
-    else:
+    if not decoded.startswith("USERNAME:"):
         return ""
+    username = decoded.split(":", 1)[1].strip()  # text after USERNAME:
+    if username in active_connections:
+        s.send(f"Username {username} already in use.".encode())
+        return ""
+    s.send("USERNAMEOK".encode())
+    return username
 
 # Wait to receive a message from the specified socket
 def receive_message(s: socket, max_length: int):
     while True:
         try:
-            data = s.recv(max_length)
-            if not data:
-                raise ConnectionError()
-            return data
+            return s.recv(max_length)
         except timeout:
             continue
+        except (ConnectionError, ConnectionResetError, ConnectionAbortedError, OSError):
+            return None
 
 server_main()
 

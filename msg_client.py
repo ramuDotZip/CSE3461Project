@@ -16,6 +16,8 @@ def client_main():
 
     # Wait for server to request client info
     username = handle_username_request(client_socket)
+    if username == "":
+        return
 
     Thread(target=handle_server_connection, args=(client_socket,)).start()
     # handle_user_input(client_socket)
@@ -27,52 +29,62 @@ def client_main():
 # Receive a username request from the server, prompt the user for their
 #  username, and send a username response back to the server.
 def handle_username_request(s: socket) -> str:
-    # TODO: add a timeout to abort the connection if the server does
-    #  not properly request a username (optional)
 
     data = receive_message(s, 1024)
-    # TODO: ensure username-request format is correct
+    if not data:
+        print("Disconnected.")
+        return ""
+    decoded = data.decode()
+    if decoded != "USERNAME?":
+        print("Expected username request, received:", data.decode())
+        return ""
 
     username = input("Enter username: ").strip()
     while not re.fullmatch("\\w+", username):
         print("Username must contain only letters, digits, and underscores.")
         username = input("Enter username: ").strip()
 
-
     # send username-response message to server
     s.send(f"USERNAME:{username}".encode())
+
+    data = receive_message(s, 1024)
+    if not data:
+        print("Disconnected.")
+        return ""
+    decoded = data.decode()
+    if decoded != "USERNAMEOK":
+        print("Username request error:", decoded)
+        return ""
 
     return username
 
 # Receive messages from the server and display them to the user
 def handle_server_connection(s: socket):
     while True:
-        try:
-            data = receive_message(s, 1024)
-
-            # TODO: decode message format
-            display_message(data.decode())  # (placeholder)
-        except (ConnectionError, ConnectionResetError, ConnectionAbortedError, OSError):
+        data = receive_message(s, 1024)
+        if not data:
             print("Disconnected.")
             return
+
+        # TODO: decode message format
+        display_message(data.decode())  # (placeholder)
 
 # Wait to receive a message from the server
 def receive_message(s: socket, max_length: int):
     while True:
         try:
-            data = s.recv(max_length)
-            if not data:
-                raise ConnectionError()
-            return data
+            return s.recv(max_length)
         except timeout:
             continue
+        except (ConnectionError, ConnectionResetError, ConnectionAbortedError, OSError):
+            return None
 
 # Send a message to the server
 def send_message(message: str, s: socket):
     # TODO: encode message format
     try:
         s.send(message.encode())  # (placeholder)
-    except ConnectionError:
+    except (ConnectionError, ConnectionResetError, ConnectionAbortedError, OSError):
         display_message("Encountered a connection error while trying to send the message.")
 
 # Add a message to the message history box
