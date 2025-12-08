@@ -1,6 +1,6 @@
 import string
 
-
+key = "af2r5huh6333"
 az = string.ascii_lowercase
 
 
@@ -73,7 +73,7 @@ def derail(strings, amount):
     return result
 
 
-def encrypt(message, key):
+def encrypt(message):
     text = message
     offset = 0
     # print(text)
@@ -91,7 +91,7 @@ def encrypt(message, key):
     return text
 
 
-def decrypt(ciphertext, key):
+def decrypt(ciphertext):
     text = ciphertext
     offset = 0
     for k in key:

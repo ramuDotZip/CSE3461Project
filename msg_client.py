@@ -152,8 +152,8 @@ def construct_window(s: socket, username: str):
 
 
 # first 2 must be letters!!!!!
-keys = "af2r5"
 '''
+keys = "af2r5"
 test=encrypts.encrypt("testing 123 idk hello", keys)
 print("\npre decrypt\n")
 print(test)
