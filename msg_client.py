@@ -4,6 +4,7 @@ import string
 from tkinter import *
 import re
 
+
 def client_main():
     server_host = input("Enter server address: ").strip()
     if server_host == "":
@@ -30,7 +31,6 @@ def client_main():
 # Receive a username request from the server, prompt the user for their
 #  username, and send a username response back to the server.
 def handle_username_request(s: socket) -> str:
-
     data = receive_message(s, 1024)
     if not data:
         print("Disconnected.")
@@ -59,6 +59,7 @@ def handle_username_request(s: socket) -> str:
 
     return username
 
+
 # Receive messages from the server and display them to the user
 def handle_server_connection(s: socket):
     while True:
@@ -70,6 +71,7 @@ def handle_server_connection(s: socket):
         # TODO: decode message format
         display_message(data.decode())  # (placeholder)
 
+
 # Wait to receive a message from the server
 def receive_message(s: socket, max_length: int):
     while True:
@@ -80,6 +82,7 @@ def receive_message(s: socket, max_length: int):
         except (ConnectionError, ConnectionResetError, ConnectionAbortedError, OSError):
             return None
 
+
 # Send a message to the server
 def send_message(message: str, s: socket):
     # TODO: encode message format
@@ -88,6 +91,7 @@ def send_message(message: str, s: socket):
     except (ConnectionError, ConnectionResetError, ConnectionAbortedError, OSError):
         display_message("Encountered a connection error while trying to send the message.")
 
+
 # Add a message to the message history box
 def display_message(message: str):
     if not history_text:
@@ -95,6 +99,7 @@ def display_message(message: str):
     history_text.configure(state="normal")
     history_text.insert("end", message + "\n")
     history_text.configure(state="disabled")
+
 
 # Create a client GUI window
 def construct_window(s: socket, username: str):
@@ -143,13 +148,16 @@ def construct_window(s: socket, username: str):
 
     return window
 
+
 az = string.ascii_lowercase
-def caesar(str, shifts):
+
+
+def caesar(input_str, shifts):
     upper = string.ascii_uppercase
     newstr = ""
     new_char = ''
-    for i in range(len(str)):
-        char = str[i]
+    for i in range(len(input_str)):
+        char = input_str[i]
         if char in upper:
             index = upper.index(char.upper())
             shifted = (index + shifts) % 26
@@ -162,70 +170,72 @@ def caesar(str, shifts):
     return newstr
 
 
-def rail(strings,amount):
-    if len(strings)<3:
+def rail(strings, amount):
+    if len(strings) < 3:
         return strings
     new_str = ""
     for i in range(0, len(strings), 2):
         new_str = new_str + strings[i]
     for i in range(1, len(strings), 2):
         new_str = new_str + strings[i]
-    if (amount > 0):
+    if amount > 0:
         rail(strings, amount - 1)
     return new_str
 
 
 # noinspection SpellCheckingInspection
-def decaesar(str, shift):
-  upper=string.ascii_uppercase
-  newstr=""
-  new_char = ''
-  for i in range (len(str)):
-    char=str[i]
-    if char in upper:
-      index = upper.index(char)
-      shifted = (index - shift)
-      new_char = upper[shifted]
-    else:
-      new_char = char
-    newstr=newstr+new_char
-  return newstr
+def decaesar(input_str, shift):
+    upper = string.ascii_uppercase
+    newstr = ""
+    new_char = ''
+    for i in range(len(input_str)):
+        char = input_str[i]
+        if char in upper:
+            index = upper.index(char)
+            shifted = (index - shift)
+            new_char = upper[shifted]
+        else:
+            new_char = char
+        newstr = newstr + new_char
+    return newstr
 
-def derail(strings,amount):
-      result = ""
-      if len(strings) < 3:
-          return strings
-      half = (len(strings) + 1) // 2
-      even = strings[:half]
-      odd = strings[half:]
-      i = 0
-      j = 0
-      for step in range(len(strings)):
-          if step % 2 == 0:
-              result=result+even[i]
-              i += 1
-          else:
-              result=result+odd[j]
-              j += 1
-      if(amount>0):
-          derail(strings, amount-1)
-      return result
+
+def derail(strings, amount):
+    result = ""
+    if len(strings) < 3:
+        return strings
+    half = (len(strings) + 1) // 2
+    even = strings[:half]
+    odd = strings[half:]
+    i = 0
+    j = 0
+    for step in range(len(strings)):
+        if step % 2 == 0:
+            result = result + even[i]
+            i += 1
+        else:
+            result = result + odd[j]
+            j += 1
+    if amount > 0:
+        derail(strings, amount - 1)
+    return result
+
 
 def encrypt(message, key):
     text = message
-    offset=0
-    #print(text)
-    #print("\npre encrypt\n")
+    offset = 0
+    # print(text)
+    # print("\npre encrypt\n")
     for k in key:
         if k.isalpha():
-            cea_num = (az.index(k.lower())+ offset) % 26
-            offset = (az.index(k.lower())+ offset) % 26
+            cea_num = (az.index(k.lower()) + offset) % 26
+            offset = (az.index(k.lower()) + offset) % 26
             text = caesar(text, cea_num)
         elif k.isdigit():
             shift_by = int(k)
             text = rail(text, shift_by)
-    #print(text)
-    #print("\npost encrypt\n")
+    # print(text)
+    # print("\npost encrypt\n")
     return text
 
 
@@ -234,22 +244,23 @@ def decrypt(ciphertext, key):
     offset = 0
     for k in key:
         if k.isalpha():
-            offset = (az.index(k.lower())+ offset) % 26
+            offset = (az.index(k.lower()) + offset) % 26
     # Reverse the key order for decryption
     for k in reversed(key):
         if k.isalpha():
-            cea_num = (az.index(k.lower())+ offset) % 26
-            offset =offset -az.index(k.lower())
-            if offset <0:
-                offset=offset+26
+            cea_num = (az.index(k.lower()) + offset) % 26
+            offset = offset - az.index(k.lower())
+            if offset < 0:
+                offset = offset + 26
             text = decaesar(text, cea_num)
         elif k.isdigit():
             shift_by = int(k)
             text = derail(text, shift_by)
 
     return text
-#first 2 must be letters!!!!!
-keys="af2r5"
+
+# first 2 must be letters!!!!!
+keys = "af2r5"
 '''
 test=encrypt("testing 123 idk hello", keys)
 print("\npre decrypt\n")
