@@ -162,6 +162,6 @@ print("\npre decrypt\n")
 print(test)
 test=decrypt(test)
 print("\npost decrypt\n")
-print(test)
-'''
+print(test)'''
+
 client_main()
