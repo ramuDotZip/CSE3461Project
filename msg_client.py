@@ -13,10 +13,19 @@ def client_main():
         server_host = "127.0.0.1"
     server_port = 12000
     client_socket = socket(AF_INET, SOCK_STREAM)
-    client_socket.settimeout(1)
+    client_socket.settimeout(5)
     print("Connecting...")
-    client_socket.connect((server_host, server_port))
+    try:
+        client_socket.connect((server_host, server_port))
+    except TimeoutError:
+        print("Error: Timed out. Make sure the server is running and available at the specified address.")
+        return
+    except ConnectionRefusedError:
+        print("Error: The target machine refused the connection.")
+        print("Make sure the server is running and available at the specified address.")
+        return
     print("Connection established.")
+    client_socket.settimeout(1)
 
     # Wait for server to request client info
     username = handle_username_request(client_socket)
