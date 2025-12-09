@@ -3,7 +3,6 @@ import time
 from encrypts import *
 from socket import *
 from threading import *
-import string
 from tkinter import *
 import re
 
@@ -89,10 +88,9 @@ def receive_message(s: socket, max_length: int):
 
 # Send a message to the server
 def send_message(s: socket, message: str):
-    # TODO: encode message format
     try:
         message = encrypt(message)
-        s.send(message.encode())  # (placeholder)
+        s.send(message.encode())
     except (ConnectionError, ConnectionResetError, ConnectionAbortedError, OSError):
         display_message("Encountered a connection error while trying to send the message.")
 

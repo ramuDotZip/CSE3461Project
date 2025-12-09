@@ -80,7 +80,7 @@ def forward_message(message: str, active_connections: dict, sender_username: str
 def broadcast_message(message: str, active_connections: dict):
     print(message)
     for user, conn in active_connections.items():
-        send_message(conn,message)
+        send_message(conn, message)
 
 def request_username(s: socket, active_connections: dict) -> str:
     # send username-request message
@@ -114,8 +114,7 @@ def receive_message(s: socket, max_length: int):
             return None
 
 def send_message(s: socket, message: str):
-    encrypted=encrypt(message)
+    encrypted = encrypt(message)
     s.send(encrypted.encode())
 
 server_main()
-

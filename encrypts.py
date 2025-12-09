@@ -7,8 +7,8 @@ az = string.ascii_lowercase
 def caesar(input_str, shifts):
     upper = string.ascii_uppercase
     newstr = ""
-    new_char = ''
-    new_shift=shifts
+    # new_char = ''
+    new_shift = shifts
     for i in range(len(input_str)):
         char = input_str[i].upper()
         if char in upper:
@@ -20,7 +20,7 @@ def caesar(input_str, shifts):
         else:
             new_char = char
         newstr = newstr + new_char
-        new_shift=new_shift+1
+        new_shift = new_shift + 1
     return newstr
 
 
@@ -41,14 +41,14 @@ def rail(strings, amount):
 def decaesar(input_str, shift):
     upper = string.ascii_uppercase
     newstr = ""
-    new_char = ''
+    # new_char = ''
     new_shift = shift
     for i in range(len(input_str)):
         char = input_str[i].upper()
         if char in upper:
             index = upper.index(char)
-            if index - new_shift<0:
-                shifted = (index - new_shift)+26
+            if index - new_shift < 0:
+                shifted = (index - new_shift) + 26
             else:
                 shifted = (index - new_shift)
             new_char = upper[shifted]
@@ -57,7 +57,7 @@ def decaesar(input_str, shift):
         else:
             new_char = char
         newstr = newstr + new_char
-        new_shift=(new_shift+1)%26
+        new_shift = (new_shift + 1) % 26
     return newstr
 
 
@@ -83,7 +83,7 @@ def derail(strings, amount):
 
 
 def encrypt(message):
-    key = "af2r5huh6333"
+    # key = "af2r5huh6333"
     text = message
     # print(text)
     # print("\npre encrypt\n")
@@ -100,7 +100,7 @@ def encrypt(message):
 
 
 def decrypt(ciphertext):
-    key = "af2r5huh6333"
+    # key = "af2r5huh6333"
     text = ciphertext
     # Reverse the key order for decryption
     for k in reversed(key):
