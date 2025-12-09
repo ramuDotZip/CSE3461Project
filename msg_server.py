@@ -47,7 +47,7 @@ def handle_client_connection(s: socket, active_connections: dict):
             return
 
         # parse the message and forward it to the intended destination
-        forward_message(data.decode(), active_connections, username)
+        forward_message(decrypt(data.decode()), active_connections, username)
 
 
 # Parse one message and send it to the intended recipient (or to everyone if
@@ -68,10 +68,10 @@ def forward_message(message: str, active_connections: dict, sender_username: str
             return
         if target in active_connections:
             targeted_message = f"{sender_username} > {target}: {text}"
-            active_connections[sender_username].send(targeted_message.encode())
-            active_connections[target].send(targeted_message.encode())
+            send_message(active_connections[sender_username], targeted_message)
+            send_message(active_connections[target], targeted_message)
         else:
-            active_connections[sender_username].send(f"Could not send message: User {target} is offline or does not exist.".encode())
+            send_message(active_connections[sender_username], f"Could not send message: User {target} is offline or does not exist.")
     else:
         broadcast_message(f"{sender_username}: {message}", active_connections)
 
@@ -80,27 +80,27 @@ def forward_message(message: str, active_connections: dict, sender_username: str
 def broadcast_message(message: str, active_connections: dict):
     print(message)
     for user, conn in active_connections.items():
-        conn.send(message.encode())
+        send_message(conn,message)
 
 def request_username(s: socket, active_connections: dict) -> str:
     # send username-request message
-    s.send("USERNAME?".encode())
+    send_message(s, "USERNAME?")
 
     response = receive_message(s, 1024)
     if not response:
         return ""
 
     # validate username-response format
-    decoded = response.decode()
+    decoded = decrypt(response.decode())
 
     # parse username
     if not decoded.startswith("USERNAME:"):
         return ""
     username = decoded.split(":", 1)[1].strip()  # text after USERNAME:
     if username in active_connections:
-        s.send(f"Username {username} already in use.".encode())
+        send_message(s, f"Username {username} already in use.")
         return ""
-    s.send("USERNAMEOK".encode())
+    send_message(s, "USERNAMEOK")
     return username
 
 # Wait to receive a message from the specified socket
@@ -112,6 +112,10 @@ def receive_message(s: socket, max_length: int):
             continue
         except (ConnectionError, ConnectionResetError, ConnectionAbortedError, OSError):
             return None
+
+def send_message(s: socket, message: str):
+    encrypted=encrypt(message)
+    s.send(encrypted.encode())
 
 server_main()
 
