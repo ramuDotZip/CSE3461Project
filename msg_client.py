@@ -1,3 +1,5 @@
+import time
+
 from encrypts import *
 from socket import *
 from threading import *
@@ -36,7 +38,7 @@ def handle_username_request(s: socket) -> str:
     if not data:
         print("Disconnected.")
         return ""
-    decoded = data.decode()
+    decoded = decrypt(data.decode())
     if decoded != "USERNAME?":
         print("Expected username request, received:", data.decode())
         return ""
@@ -47,13 +49,13 @@ def handle_username_request(s: socket) -> str:
         username = input("Enter username: ").strip()
 
     # send username-response message to server
-    s.send(f"USERNAME:{username}".encode())
+    send_message(s, f"USERNAME:{username}")
 
     data = receive_message(s, 1024)
     if not data:
         print("Disconnected.")
         return ""
-    decoded = data.decode()
+    decoded = decrypt(data.decode())
     if decoded != "USERNAMEOK":
         print("Username request error:", decoded)
         return ""
@@ -63,14 +65,15 @@ def handle_username_request(s: socket) -> str:
 
 # Receive messages from the server and display them to the user
 def handle_server_connection(s: socket):
+    while 'history_text' not in globals():  # Don't receive messages if the gui isn't initialized yet
+        time.sleep(0.5)
     while True:
         data = receive_message(s, 1024)
         if not data:
             print("Disconnected.")
             return
 
-        # TODO: decode message format
-        display_message(data.decode())  # (placeholder)
+        display_message(decrypt(data.decode()))
 
 
 # Wait to receive a message from the server
@@ -85,9 +88,10 @@ def receive_message(s: socket, max_length: int):
 
 
 # Send a message to the server
-def send_message(message: str, s: socket):
+def send_message(s: socket, message: str):
     # TODO: encode message format
     try:
+        message = encrypt(message)
         s.send(message.encode())  # (placeholder)
     except (ConnectionError, ConnectionResetError, ConnectionAbortedError, OSError):
         display_message("Encountered a connection error while trying to send the message.")
@@ -134,7 +138,7 @@ def construct_window(s: socket, username: str):
 
         # If the message is not empty, send it to the server
         if message_str != "":
-            send_message(message_str, s)
+            send_message(s, message_str)
 
         # Stop the key press from putting a newline in the (now empty) text box
         return "break"
