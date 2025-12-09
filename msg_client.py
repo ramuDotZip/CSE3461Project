@@ -152,14 +152,12 @@ def construct_window(s: socket, username: str):
 
 
 # first 2 must be letters!!!!!
-'''
-keys = "af2r5"
-test=encrypts.encrypt("testing 123 idk hello", keys)
+'''keys = "af2r5"
+test=encrypt("testing 123 idk hello")
 print("\npre decrypt\n")
 print(test)
-test=encrypts.decrypt(test, keys)
+test=decrypt(test)
 print("\npost decrypt\n")
 print(test)
 '''
-
 client_main()

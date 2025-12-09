@@ -8,17 +8,19 @@ def caesar(input_str, shifts):
     upper = string.ascii_uppercase
     newstr = ""
     new_char = ''
+    new_shift=shifts
     for i in range(len(input_str)):
-        char = input_str[i]
+        char = input_str[i].upper()
         if char in upper:
             index = upper.index(char.upper())
-            shifted = (index + shifts) % 26
+            shifted = (index + new_shift) % 26
             new_char = upper[shifted]
-            if char.islower():
+            if input_str[i].islower():
                 new_char = new_char.lower()
         else:
             new_char = char
         newstr = newstr + new_char
+        new_shift=new_shift+1
     return newstr
 
 
@@ -40,15 +42,22 @@ def decaesar(input_str, shift):
     upper = string.ascii_uppercase
     newstr = ""
     new_char = ''
+    new_shift = shift
     for i in range(len(input_str)):
-        char = input_str[i]
+        char = input_str[i].upper()
         if char in upper:
             index = upper.index(char)
-            shifted = (index - shift)
+            if index - new_shift<0:
+                shifted = (index - new_shift)+26
+            else:
+                shifted = (index - new_shift)
             new_char = upper[shifted]
+            if input_str[i].islower():
+                new_char = new_char.lower()
         else:
             new_char = char
         newstr = newstr + new_char
+        new_shift=(new_shift+1)%26
     return newstr
 
 
@@ -74,14 +83,13 @@ def derail(strings, amount):
 
 
 def encrypt(message):
+    key = "af2r5huh6333"
     text = message
-    offset = 0
     # print(text)
     # print("\npre encrypt\n")
     for k in key:
         if k.isalpha():
-            cea_num = (az.index(k.lower()) + offset) % 26
-            offset = (az.index(k.lower()) + offset) % 26
+            cea_num = az.index(k.lower())
             text = caesar(text, cea_num)
         elif k.isdigit():
             shift_by = int(k)
@@ -92,18 +100,12 @@ def encrypt(message):
 
 
 def decrypt(ciphertext):
+    key = "af2r5huh6333"
     text = ciphertext
-    offset = 0
-    for k in key:
-        if k.isalpha():
-            offset = (az.index(k.lower()) + offset) % 26
     # Reverse the key order for decryption
     for k in reversed(key):
         if k.isalpha():
-            cea_num = (az.index(k.lower()) + offset) % 26
-            offset = offset - az.index(k.lower())
-            if offset < 0:
-                offset = offset + 26
+            cea_num = az.index(k.lower())
             text = decaesar(text, cea_num)
         elif k.isdigit():
             shift_by = int(k)
