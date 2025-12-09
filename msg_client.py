@@ -127,6 +127,7 @@ def display_message(message: str):
     history_text.configure(state="normal")
     history_text.insert("end", message + "\n")
     history_text.configure(state="disabled")
+    history_text.see("end")
 
 
 # Create a client GUI window
